@@ -1,0 +1,1005 @@
+:root {
+    --primary: #b79d5b;
+    --primary-hover: #d4bd76;
+    --bg-dark: #121212;
+    --glass: rgba(24, 24, 24, 0.9);
+    --border: rgba(255, 255, 255, 0.12);
+    --text: #e0e0e0;
+    --muted: #8a8a8a;
+    --danger: #e05a5a;
+    --success: #6fcf97;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-dark);
+    background-image: radial-gradient(circle at 50% 0%, #1c1c1c 0%, #0a0a0a 60%);
+    color: var(--text);
+    margin: 0;
+    min-height: 100vh;
+    padding: 2.5rem 1rem;
+}
+
+.wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+header.app-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+h1.title {
+    font-family: 'Cinzel', serif;
+    font-size: 2.4rem;
+    margin: 0;
+    background: linear-gradient(to right, #fff, var(--primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+    color: var(--muted);
+    margin-top: 0.4rem;
+    font-size: 0.95rem;
+}
+
+.db-status {
+    display: inline-block;
+    margin-top: 0.8rem;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.7rem;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+}
+.db-status.ok { color: var(--success); border-color: rgba(111,207,151,0.4); }
+.db-status.missing { color: var(--danger); border-color: rgba(224,90,90,0.4); }
+
+/* Brand links (share-page subtitle "ScryScan" + footer "Powered by
+   ScryScan"): amber like the rest of the branding, Inter like the page
+   body. The explicit :visited rule outranks the UA's a:visited so a
+   previously-clicked link never renders in the browser's default
+   blue/purple. */
+a.brand-link,
+a.brand-link:visited {
+    color: var(--primary);
+    font-family: 'Inter', sans-serif;
+    text-decoration: none;
+}
+a.brand-link:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+}
+
+/* Share-page footer line (centered under the results panel). */
+.share-footer {
+    text-align: center;
+    margin: 2.5rem 0 0;
+}
+
+.panel {
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 1.8rem;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    backdrop-filter: blur(8px);
+}
+
+.panel + .panel { margin-top: 1.5rem; }
+
+/* --- Controls row --- */
+.controls-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.2rem;
+}
+
+.control-group label.group-label {
+    display: block;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+}
+
+.toggle-group {
+    display: inline-flex;
+    background: rgba(0,0,0,0.35);
+    border-radius: 10px;
+    padding: 4px;
+    border: 1px solid var(--border);
+}
+
+.toggle-group button {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.15s ease;
+}
+
+.toggle-group button.active {
+    background: var(--primary);
+    color: #000;
+}
+
+.switch-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    transition: background 0.2s;
+}
+
+.switch::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    background: var(--muted);
+    border-radius: 50%;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.switch-checkbox { display: none; }
+.switch-checkbox:checked + .switch { background: rgba(183,157,91,0.35); }
+.switch-checkbox:checked + .switch::after {
+    transform: translateX(20px);
+    background: var(--primary);
+}
+
+/* --- Drop zone --- */
+.upload-area {
+    border: 2px dashed var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    min-height: 220px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+}
+
+.upload-area.dragover { border-color: var(--primary); background: rgba(183,157,91,0.08); }
+
+.upload-icon {
+    width: 72px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-bottom: 0.8rem;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+}
+
+.upload-area h3 { margin: 0 0 0.3rem; font-family: 'Cinzel', serif; }
+.upload-area p { margin: 0; color: var(--muted); font-size: 0.85rem; }
+
+.browse-buttons {
+    display: flex;
+    gap: 0.7rem;
+    margin-top: 1rem;
+}
+
+.browse-buttons button {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.82rem;
+}
+.browse-buttons button:hover { border-color: var(--primary); color: var(--primary); }
+
+.file-list {
+    margin-top: 1rem;
+    max-height: 130px;
+    overflow-y: auto;
+    width: 100%;
+    text-align: left;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+.file-list div { padding: 2px 0; border-bottom: 1px dashed rgba(255,255,255,0.05); }
+
+.file-list.thumbnail-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    max-height: 240px;
+}
+.file-list.thumbnail-grid div { border-bottom: none; padding: 0; }
+
+.thumbnail-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 84px;
+}
+.thumbnail-item img {
+    width: 78px;
+    height: 78px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #000;
+}
+.thumbnail-item span {
+    margin-top: 0.3rem;
+    font-size: 0.65rem;
+    color: var(--muted);
+    max-width: 84px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.thumbnail-remove {
+    position: absolute;
+    top: -6px;
+    right: 2px;
+    width: 20px;
+    height: 20px;
+    line-height: 18px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: #1a1a1a;
+    color: var(--text);
+    font-size: 0.85rem;
+    cursor: pointer;
+    z-index: 2;
+}
+.thumbnail-remove:hover { background: var(--danger); border-color: var(--danger); color: #fff; }
+
+.btn {
+    background: var(--primary);
+    color: #000;
+    font-weight: 800;
+    border: none;
+    padding: 0.9rem 1.5rem;
+    border-radius: 12px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 1rem;
+    margin-top: 1.3rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: transform 0.15s, background 0.15s;
+}
+.btn:hover:not(:disabled) { background: var(--primary-hover); transform: translateY(-1px); }
+.btn:disabled { background: #444; color: #888; cursor: not-allowed; }
+
+.btn-outline {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    padding: 0.7rem 1.3rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+.error-box {
+    display: none;
+    background: rgba(224,90,90,0.12);
+    border: 1px solid rgba(224,90,90,0.4);
+    color: #ffb3b3;
+    padding: 0.7rem 1rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+}
+
+/* --- Progress panel --- */
+#progressPanel { display: none; text-align: center; }
+
+.progress-track {
+    width: 100%;
+    height: 10px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 1.2rem 0 0.8rem;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--primary), #00e5ff);
+    box-shadow: 0 0 12px rgba(183,157,91,0.6);
+    transition: width 0.3s ease;
+}
+
+.progress-step {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    color: var(--text);
+}
+
+.progress-counter { color: var(--muted); font-size: 0.85rem; margin-top: 0.3rem; }
+
+/* --- Results panel --- */
+#resultsPanel { display: none; }
+
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.results-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Grand total (sum of all per-image totals), owner and share pages alike.
+   Parked in the page template next to the results container, then moved by
+   createResultsView into the .view-toggles-row toolbar (far right — see
+   .view-toggles-row .grand-total below) so it shares the row with the two
+   view toggles. Text set by the page script via onTotalChange; hidden while
+   no results show. Slightly larger than the action buttons on purpose: it
+   is the headline number of a scan. */
+.grand-total {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary);
+    white-space: nowrap;
+    align-self: center;
+    flex-shrink: 0;
+    letter-spacing: 0.01em;
+}
+
+.result-block {
+    border-top: 1px solid var(--border);
+    padding-top: 1.5rem;
+    margin-top: 1.5rem;
+}
+.result-block:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+
+.file-name {
+    display: flex;
+    align-items: baseline;
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: var(--primary);
+    opacity: 0.8;
+    margin-bottom: 0.8rem;
+}
+
+.file-name-wrap {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+/* Per-image remove button (owner view only; see results_view.js). */
+.remove-btn {
+    flex: none;
+    width: 1.15rem;
+    height: 1.15rem;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.remove-btn:hover {
+    color: var(--danger);
+    border-color: var(--danger);
+    background: rgba(224, 90, 90, 0.12);
+}
+
+/* Empty results state (every image removed from the job). */
+.results-empty {
+    padding: 2rem 0;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+/* Append mode: the upload panel is shown above the results and the drop
+   zone carries .append-hint (see app.js) to surface this note. */
+.append-hint-note {
+    display: none;
+    margin-bottom: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border: 1px solid var(--primary);
+    border-radius: 8px;
+    color: var(--primary);
+    font-size: 0.8rem;
+    text-align: center;
+}
+#dropZone.append-hint .append-hint-note {
+    display: block;
+}
+
+.btn-small {
+    padding: 0.4rem 0.9rem;
+    font-size: 0.72rem;
+    min-width: auto;
+    white-space: nowrap;
+}
+
+.share-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    padding: 0.6rem 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--glass);
+}
+.share-url {
+    user-select: all;
+    word-break: break-all;
+    font-family: monospace;
+    font-size: 0.85rem;
+}
+.share-expiry {
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+.comparison-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+/* Global "Show images" toggle (results_view.js): the flag class lives on
+   the results container; hiding every .comparison-grid leaves a bare list
+   of card rows, no large original/detected images. */
+.results-images-hidden .comparison-grid { display: none; }
+
+/* Global "Show set selection" toggle (results_view.js, owner + share pages
+   alike): the flag class lives on the results container. Hiding the
+   candidate chip rows (.set-candidates) leaves a clean card list once every
+   ambiguous card has a picked set. A picked card's green "set selected"
+   badge (.set-badge-user) hides outright, but an UNPICKED warning badge
+   (set unclear / set unverified) collapses to a bare amber ⚠ — pill
+   border/background stripped, the .set-badge-text span hidden, the glyph
+   re-added via ::after — so a card skipped by mistake still stands out in
+   the clean list (the tooltip, swapped to "no set was selected — the shown
+   set may be wrong" by applySetSelectionTitles in results_view.js, explains
+   the mark). */
+.set-selection-hidden .set-candidates { display: none; }
+.set-selection-hidden .set-badge.set-badge-user { display: none; }
+.set-selection-hidden .set-badge:not(.set-badge-user) {
+    padding: 0;
+    border: none;
+    background: none;
+    color: #e6a23c;
+    font-size: 0.85rem;
+    cursor: help;
+}
+.set-selection-hidden .set-badge:not(.set-badge-user) .set-badge-text { display: none; }
+.set-selection-hidden .set-badge:not(.set-badge-user)::after { content: "\26A0"; }
+
+.column-title {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 0.5rem;
+}
+
+.image-frame {
+    height: 420px;
+    background: #050505;
+    border: 1px solid #2c2c2c;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.zoom-wrapper {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.zoom-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    will-change: transform;
+    transform-origin: center center;
+}
+.zoom-image.zoomed { transform: scale(2.2); }
+
+/* Automatic re-render status pill overlaid on the bottom edge of the
+   processed (right) image: every manual set pick re-renders the image in
+   the background (no Update button). It is absolutely positioned inside
+   .status-anchor (the processed-image grid cell) so it never nudges the
+   page layout. While the request is in flight the image is dimmed and the
+   pill says "Updating detected image…"; on failure it shows the error
+   until the next successful render. */
+.status-anchor { position: relative; }
+.update-status {
+    position: absolute;
+    left: 50%;
+    bottom: 8px;
+    transform: translateX(-50%);
+    max-width: calc(100% - 16px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 3px 10px;
+    background: rgba(10, 8, 5, 0.88);
+    border: 1px solid rgba(183, 157, 91, 0.35);
+    border-radius: 4px;
+    font-size: 0.8rem;
+    pointer-events: none;
+    z-index: 2;
+}
+.update-status.updating { color: var(--primary); }
+.update-status.error { color: var(--danger); border-color: rgba(224, 90, 90, 0.5); }
+.image-frame.updating img { opacity: 0.5; }
+
+/* Global view toolbar at the top of the results list (results_view.js):
+   the "Show thumbnails" + "Show images" + "Show set selection" switches
+   (the last one on owner AND share pages alike), plus — owner page only
+   (results_view.js renders it when the page passes onChangeShowPrice) —
+   the short "Show price" switch; flex-wrap keeps it on one line next to
+   the toggles without colliding with the grand total at the far right.
+   Replaces the old per-image .cards-toggle-row. */
+.view-toggles-row {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+/* Grand total appended to the toolbar by createResultsView (see the
+   .grand-total comment above): pushed to the far right of the toggle row. */
+.view-toggles-row .grand-total {
+    margin-left: auto;
+}
+
+.card-thumb-wrap {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+    text-decoration: none;
+}
+
+.card-thumb {
+    width: 40px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    background: #000;
+    cursor: zoom-in;
+    display: block;
+}
+
+.card-list.hide-thumbs .card-thumb-wrap { display: none; }
+
+.card-thumb-full {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    width: 260px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 2px solid var(--primary);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+    z-index: 50;
+    cursor: pointer;
+}
+
+.card-thumb-full img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.card-thumb-wrap:hover .card-thumb-full { display: block; }
+
+.card-list {
+    margin-top: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.card-row {
+    display: flex;
+    gap: 0.7rem;
+    align-items: center;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.85rem;
+}
+
+.card-row .card-name { flex: 1; }
+.card-row .price { color: var(--primary); font-weight: 700; }
+.card-row .unmatched { color: var(--muted); font-style: italic; }
+.card-name-link { color: inherit; text-decoration: none; }
+.card-name-link:hover { color: var(--primary); text-decoration: underline; }
+.tcgplayer-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.4rem;
+    vertical-align: middle;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+.tcgplayer-link:hover { opacity: 1; }
+.tcgplayer-link svg { width: 14px; height: 14px; }
+.tcgplayer-link svg g { fill: var(--primary); }
+
+/* Per-card finish toggle: small 3-option segmented control (N / ✦ / ✪)
+   on the card name line of matched cards, letting the owner switch the
+   card's finish after detection. Mirrors the batch .toggle-group styling,
+   scaled down to sit inline. The active option uses the gold accent;
+   read-only (share) views render the same markup as inert spans. */
+.finish-toggle {
+    display: inline-flex;
+    margin-left: 0.45rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    vertical-align: middle;
+}
+.finish-opt {
+    font: inherit;
+    font-size: 0.7rem;
+    line-height: 1.5;
+    padding: 0.02rem 0.4rem;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.04);
+    border: none;
+    border-right: 1px solid var(--border);
+    transition: color 0.15s, background 0.15s;
+}
+.finish-opt:last-child {
+    border-right: none;
+}
+button.finish-opt {
+    cursor: pointer;
+}
+button.finish-opt:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.1);
+}
+.finish-opt.active {
+    color: var(--primary);
+    background: rgba(183, 157, 91, 0.15);
+    font-weight: 600;
+}
+.card-meta {
+    margin-left: 0.5rem;
+    color: var(--muted);
+    font-size: 0.8rem;
+}
+
+/* Set disambiguation: ambiguity badge + candidate edition chips (phase 6) */
+.set-badge {
+    display: inline-block;
+    margin-left: 0.6rem;
+    padding: 0.05rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.5;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+.set-badge.ambiguous {
+    color: #e6a23c;
+    border-color: rgba(230, 162, 60, 0.45);
+    background: rgba(230, 162, 60, 0.12);
+}
+.set-badge.unverified {
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.04);
+}
+.set-candidates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.45rem;
+}
+.set-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font: inherit;
+    font-size: 0.75rem;
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.15rem 0.6rem;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+/* Only the owner page renders interactive chips (<button>); the shared page
+   renders inert <span> chips, which must not show a pointer cursor. */
+button.set-chip {
+    cursor: pointer;
+}
+/* Set-symbol icon used in candidate chips and card-row meta (see
+   setChipIconHtml in app.js); the svg carries fill="currentColor" so it
+   follows the surrounding text color. */
+.set-chip-icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+}
+.set-chip-icon svg {
+    display: block;
+    height: 0.95em;
+    width: auto;
+    fill: currentColor;
+}
+/* In .card-meta the icon sits inline before the set name; .set-chip provides
+   its own gap, so the meta context needs an explicit spacer. */
+.card-meta .set-chip-icon {
+    margin-right: 0.3em;
+}
+.set-chip:hover {
+    color: var(--primary-hover);
+    border-color: var(--primary);
+}
+.set-chip.active {
+    color: var(--primary-hover);
+    border-color: var(--primary);
+    background: rgba(183, 157, 91, 0.18);
+}
+.set-chip.loading {
+    opacity: 0.5;
+    pointer-events: none;
+}
+/* User-picked "checked" state (see markSetChecked in app.js): the picked chip
+   goes green and the status badge becomes a green "set selected" tag so long
+   result lists can be triaged at a glance. */
+.set-chip.set-chip-selected {
+    color: var(--success);
+    border-color: var(--success);
+    background: rgba(111, 207, 151, 0.12);
+}
+.set-chip.set-chip-dimmed {
+    opacity: 0.45;
+}
+.set-badge.set-badge-user {
+    color: var(--success);
+    border-color: rgba(111, 207, 151, 0.45);
+    background: rgba(111, 207, 151, 0.12);
+}
+/* Set-chip hover preview: the real Scryfall reference image in stock for
+   that card/set (scryfall_images/<scryfall_id>.jpg), shown in the same popup
+   style as the card thumbnail hover (.card-thumb-full) so it can be compared
+   with the scanned crop. The image lazy-loads on first hover (see app.js). */
+.set-chip-wrap {
+    position: relative;
+    display: inline-flex;
+}
+.set-chip-wrap:hover .set-chip-preview {
+    display: block;
+}
+.set-chip-preview {
+    cursor: default;
+}
+.set-chip-preview img {
+    background: #111;
+}
+.set-chip-preview-empty {
+    display: none;
+    padding: 1.4rem 0.8rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.75rem;
+    background: #111;
+}
+.set-chip-preview-empty.show {
+    display: block;
+}
+
+/* Card-name reference icon (app.js cardRefHtml): amber photo icon to the
+   left of the card name for matched cards; hovering shows the in-stock
+   Scryfall reference image (scryfall_images/<scryfall_id>.jpg) in the same
+   popup style as the card thumbnail hover (.card-thumb-full) so it can be
+   compared with the scanned crop. Lazy-loads on first hover (see app.js). */
+.card-ref-wrap {
+    position: relative;
+    display: inline-flex;
+    vertical-align: middle;
+    margin-right: 0.4rem;
+}
+.card-ref-icon {
+    display: inline-flex;
+    color: var(--primary);
+    cursor: help;
+}
+.card-ref-icon svg {
+    display: block;
+    height: 1.2em;
+    width: auto;
+    fill: currentColor;
+}
+/* Dual-face cards: the icon is clickable (flips the popup front/back). */
+.card-ref-wrap.card-ref-dual .card-ref-icon {
+    cursor: pointer;
+    position: relative;
+}
+/* Flip-arrows badge (CARD_FLIP_ICON) overlapping the reference icon's
+   bottom-right corner — at-a-glance hint that the card is dual-face and the
+   icon flips the face. Clicks bubble to the .card-ref-icon flip handler; the
+   dark chip + light arrows (var(--text), overriding the icon's amber
+   currentColor) give the badge maximum contrast over the amber frame. */
+.card-ref-flip {
+    position: absolute;
+    right: -0.4em;
+    bottom: -0.45em;
+    line-height: 0;
+    background: var(--bg-dark);
+    border-radius: 4px;
+    color: var(--text);
+}
+.card-ref-flip svg {
+    height: 1.24em;
+}
+.card-ref-wrap:hover .card-ref-preview {
+    display: block;
+}
+.card-ref-preview {
+    cursor: default;
+}
+.card-ref-preview img {
+    background: #111;
+}
+.card-ref-preview-empty {
+    display: none;
+    padding: 1.4rem 0.8rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.75rem;
+    background: #111;
+}
+.card-ref-preview-empty.show {
+    display: block;
+}
+
+.total-row {
+    margin-top: 0.7rem;
+    text-align: right;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+@media (max-width: 720px) {
+    .comparison-grid { grid-template-columns: 1fr; }
+    .image-frame { height: 300px; }
+    .controls-row { flex-direction: column; align-items: flex-start; }
+}
+
+/* --- New-scan confirmation modal (in-page replacement for confirm()) --- */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    z-index: 100;
+}
+
+/* display:flex above would otherwise override the `hidden` attribute */
+.modal-overlay[hidden] { display: none; }
+
+.modal {
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 1.8rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    max-width: 440px;
+    width: 100%;
+    text-align: center;
+}
+
+.modal-title {
+    font-family: 'Cinzel', serif;
+    color: var(--primary);
+    font-size: 1.3rem;
+    margin: 0 0 0.8rem;
+}
+
+.modal-text {
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0 0 1.4rem;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 0.8rem;
+    justify-content: center;
+}
+
+.btn-danger {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid rgba(224, 90, 90, 0.5);
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    padding: 0.7rem 1.3rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-danger:hover { background: rgba(224, 90, 90, 0.15); border-color: var(--danger); }

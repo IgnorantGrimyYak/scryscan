@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScryScan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}">
+</head>
+<body>
+    <div class="wrap">
+        <header class="app-header">
+            <h1 class="title">ScryScan</h1>
+            <p class="subtitle">Detect, identify and price your Magic: The Gathering cards from a photo</p>
+            {% if db_loaded %}
+                <span class="db-status ok">Card database loaded ({{ db_count }} cards)</span>
+            {% else %}
+                <span class="db-status missing">Card database not found - names/prices won't be matched</span>
+            {% endif %}
+        </header>
+
+        <div id="errorBox" class="error-box"></div>
+
+        <!-- Upload panel -->
+        <section class="panel" id="uploadPanel">
+            <div class="controls-row">
+                <div class="control-group">
+                    <label class="group-label">Card Finish</label>
+                    <div class="toggle-group" id="finishToggle">
+                        <button type="button" data-finish="nonfoil" class="active">Normal</button>
+                        <button type="button" data-finish="foil">Foil</button>
+                        <button type="button" data-finish="etched">Etched</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="upload-area" id="dropZone">
+                <input type="file" id="fileInput" accept=".png,.jpg,.jpeg,.bmp,.tif,.tiff,.webp" multiple hidden>
+                <input type="file" id="folderInput" webkitdirectory directory multiple hidden>
+
+                <div class="append-hint-note">Adding images to the current scan &mdash; new results will be appended below the existing ones.</div>
+
+                <div id="placeholderContent" class="placeholder-content">
+                    <img class="upload-icon" src="{{ url_for('static', filename='img/card-back.png') }}" alt="Magic: The Gathering card back">
+                    <h3>Drag &amp; drop images or a folder</h3>
+                    <p>or use the buttons below to browse</p>
+                    <div class="browse-buttons">
+                        <button type="button" id="browseFilesBtn">Browse Files</button>
+                        <button type="button" id="browseFolderBtn">Browse Folder</button>
+                    </div>
+                </div>
+                <div id="fileList" class="file-list" style="display:none;"></div>
+            </div>
+
+            <button type="button" class="btn" id="startBtn" disabled>Scan Cards</button>
+            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                <a href="/search" class="btn-outline" style="flex: 1; text-align: center; text-decoration: none; padding: 0.75rem;">Search Card Database</a>
+            </div>
+        </section>
+
+        <!-- Progress panel -->
+        <section class="panel" id="progressPanel">
+            <div class="progress-step" id="progressStep">Initializing...</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-counter" id="progressCounter"></div>
+        </section>
+
+        <!-- Results panel -->
+        <section class="panel" id="resultsPanel">
+            <div class="results-header">
+                <div class="results-title">
+                    <h2 style="font-family:'Cinzel', serif; color: var(--primary); margin:0;">Scan Results</h2>
+                    <button type="button" class="btn-outline btn-small" id="scanAnotherBtn">New Scan</button>
+                </div>
+                <div style="display:flex; gap: 0.8rem; flex-wrap: wrap;">
+                    <button type="button" class="btn-outline btn-small" id="addImagesBtn" hidden>Add Images</button>
+                    <a id="downloadImageLink" class="btn-outline" href="#" download>Download Image</a>
+                    <a id="csvDownloadLink" class="btn-outline" href="#" download>Download CSV</a>
+                    <button type="button" class="btn-outline" id="shareBtn">Share</button>
+                </div>
+            </div>
+            <!-- Grand total over all detected cards (sum of the per-image
+                 totals); kept in sync by app.js via createResultsView's
+                 onTotalChange callback. Parked here (hidden, no text) until
+                 the first render: createResultsView then moves it into the
+                 .view-toggles-row toolbar — the same row as the two view
+                 toggles, pushed to the far right by CSS — the headline
+                 number of a scan. -->
+            <span id="grandTotal" class="grand-total" hidden></span>
+            <div id="resultsContainer"></div>
+        </section>
+    </div>
+
+    <!-- New-scan confirmation modal (replaces the browser confirm() popup;
+         shown by app.js when "New Scan" is clicked on the results page) -->
+    <div id="newScanModal" class="modal-overlay" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="newScanModalTitle">
+            <h2 id="newScanModalTitle" class="modal-title">Start a new scan?</h2>
+            <p class="modal-text">This will wipe the current results, the share link and any selected files. This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button type="button" class="btn-outline" id="newScanCancelBtn">Cancel</button>
+                <button type="button" class="btn-danger" id="newScanConfirmBtn">New Scan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Session URL: /job/<job_id> re-renders this page with the job id set,
+         so app.js can re-attach to the session (live progress, results,
+         share bar) after a tab loss or an app restart. Plain "/" loads keep
+         it null. -->
+    <script>window.RESUMED_JOB_ID = {% if resumed_job_id %}{{ resumed_job_id | tojson }}{% else %}null{% endif %};</script>
+    <script src="{{ url_for('static', filename='js/set_icons.js', v='inline-currentcolor') }}"></script>
+    <script src="{{ url_for('static', filename='js/results_view.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

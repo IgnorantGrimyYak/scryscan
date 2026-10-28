@@ -1,0 +1,63 @@
+# Downloaded Scryfall bulk data (timestamped .json.gz / .jsonl.gz from the
+# bulk-data page, passed directly to scripts/generate_phash_json.py)
+/default-cards*.json*
+
+# Generated Scryfall data and local database (in data/, alongside the
+# checked-in plst_logo_template.npy — artifacts ignored individually)
+/data/scryfall_db.sqlite
+/data/default-cards.json
+/data/default-cards.jsonl
+
+# Generated set-symbol template cache (rebuilt by
+# scripts/build_set_symbol_templates.py; data/plst_logo_template.npy is checked in)
+/data/set_symbol_templates.pkl
+
+# Local image input and generated extraction output
+/input/*
+!/input/.gitkeep
+/output/*
+!/output/.gitkeep
+
+# Per-request uploads and generated job output
+/webapp_jobs/*
+!/webapp_jobs/.gitkeep
+
+# Local cloudflared tunnel files and launcher
+/cloudflared.bat
+/cloudflared*.exe
+/.cloudflared/
+
+# Python caches, virtual environments, and local tooling
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+.env
+.env.*
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Logs and editor/OS files
+*.log
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Download cache: Scryfall card images (~118k jpgs, ~18 GB, downloaded by
+# scripts/generate_phash_json.py) and icon SVGs (re-fetched by
+# scripts/build_set_icons.py / scripts/build_mana_icons.py).
+# The folder layout is kept via .gitkeep files; the contents are ignored.
+/cache/*
+!cache/set_icons/
+!cache/symbol_icons/
+!cache/scryfall_images/
+/cache/set_icons/*
+!/cache/set_icons/.gitkeep
+/cache/symbol_icons/*
+!/cache/symbol_icons/.gitkeep
+/cache/scryfall_images/*
+!/cache/scryfall_images/.gitkeep

@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Search - ScryScan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}">
+    <style>
+        .back-row {
+            margin-top: 1rem;
+        }
+
+        .back-row a {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: transparent;
+            color: #b79d5b;
+            border: 1px solid #b79d5b;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .back-row a:hover {
+            background: rgba(183, 157, 91, 0.1);
+        }
+
+        header.app-header {
+            margin-bottom: 0.5rem;
+        }
+
+        .search-container {
+            max-width: 800px;
+            margin: 0.5rem auto;
+            padding: 1.5rem 2rem 2rem;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .search-input-wrap {
+            position: relative;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .search-input-wrap input {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 0.5rem;
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+        }
+
+        .search-input-wrap input:focus {
+            outline: none;
+            border-color: #b79d5b;
+            box-shadow: 0 0 0 2px rgba(183, 157, 91, 0.2);
+        }
+
+        .suggestions {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: rgba(20, 20, 20, 0.98);
+            border: 1px solid rgba(183, 157, 91, 0.5);
+            border-radius: 0.5rem;
+            max-height: 340px;
+            overflow-y: auto;
+            z-index: 20;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
+            text-align: left;
+        }
+
+        .suggestion-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 1rem;
+            padding: 0.55rem 0.9rem;
+            color: #eee;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .suggestion-item .s-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .suggestion-item .s-name b {
+            color: #b79d5b;
+            font-weight: 600;
+        }
+
+        .suggestion-item .s-edition {
+            color: #999;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .suggestion-item:hover,
+        .suggestion-item.active {
+            background: rgba(183, 157, 91, 0.15);
+        }
+
+        .suggestion-empty {
+            padding: 0.55rem 0.9rem;
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        .suggestion-more {
+            padding: 0.45rem 0.9rem;
+            border-top: 1px solid rgba(183, 157, 91, 0.25);
+            color: #888;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        .search-box button {
+            padding: 0.75rem 1.5rem;
+            background: #b79d5b;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .search-box button:hover {
+            background: #9d8449;
+        }
+
+        .card-result {
+            background: rgba(20, 20, 20, 0.95);
+            border: 1px solid rgba(183, 157, 91, 0.5);
+            border-radius: 1rem;
+            padding: 4.5rem 2rem 2rem; /* top space for corner name + mana cost */
+            text-align: center;
+            display: none;
+            position: relative; /* anchor for .card-name and .mana-cost */
+        }
+
+        .card-name {
+            position: absolute;
+            top: 1rem;
+            left: 2rem;
+            color: #b79d5b;
+            font-size: 1.5rem;
+            line-height: 1.2;
+            margin: 0;
+            max-width: 55%;
+            text-align: left;
+        }
+
+        @media (max-width: 640px) {
+            .card-name {
+                font-size: 1.2rem;
+                max-width: 45%;
+            }
+        }
+
+        .mana-cost {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: none;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 2px;
+            max-width: 40%; /* leaves room for .card-name on the left */
+        }
+
+        .mana-cost.show {
+            display: flex;
+        }
+
+        .mana-cost img {
+            display: block;
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Fallback badge for mana symbols without an SVG icon */
+        .mana-cost .mana-fallback {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 16px;
+            height: 16px;
+            padding: 0 3px;
+            border-radius: 8px;
+            background: #555;
+            color: #fff;
+            font-size: 8px;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .card-result.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card-image-container {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Dual-face cards: front (left) and back (right) side by side.
+           The back-face wrap stays hidden unless the container has .dual-face. */
+        .card-image-container .card-image-back-wrap {
+            display: none;
+        }
+
+        .card-image-container.dual-face {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 1.5rem;
+        }
+
+        .card-image-container.dual-face .card-image-back-wrap {
+            display: inline-block;
+        }
+
+        .card-image-container.dual-face .card-thumb-wrap {
+            flex-shrink: 1;
+            min-width: 0;
+        }
+
+        .card-image {
+            display: block;
+            max-width: 100%;
+            max-height: 250px;
+            width: auto;
+            height: auto;
+            margin: 0 auto;
+            border-radius: 0.5rem;
+            cursor: zoom-in;
+        }
+
+        /* Overlay the hover popup (.card-thumb-full from style.css) directly on top of
+           the card, hiding the thumbnail while hovered */
+        .card-image-container .card-thumb-full {
+            top: 0;
+            bottom: auto;
+            left: 50%;
+            transform: translateX(-50%);
+            /* 400px tall at the card's 636:889 aspect ratio (global default is 260px wide) */
+            width: 286px;
+        }
+
+        .card-details {
+            text-align: left;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-type-edition-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .card-type {
+            font-size: 0.95rem;
+            color: #999;
+            text-align: left;
+        }
+
+        .card-edition {
+            color: #999;
+            font-size: 0.95rem;
+            text-align: right;
+        }
+
+        /* Set edition icon, shown to the left of the edition name.
+           Inline <svg> from static/js/set_icons.js (generated from
+           resources/set_icon.txt by scripts/build_set_icons.py),
+           recolored to currentColor so it always matches the text color. */
+        .set-icon-wrap {
+            display: inline-block;
+        }
+
+        .set-icon {
+            display: inline-block;
+            height: 1.05em;
+            width: auto;
+            vertical-align: -0.15em;
+            margin-right: 0.4rem;
+            fill: currentColor;
+        }
+
+        .price-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .price-item {
+            background: rgba(183, 157, 91, 0.1);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border-left: 3px solid #b79d5b;
+        }
+
+        .price-label {
+            font-size: 0.85rem;
+            color: #999;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .price-value {
+            font-size: 1.3rem;
+            color: #b79d5b;
+            font-weight: 600;
+        }
+
+        .price-value.none {
+            color: #666;
+            font-style: italic;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .button-group a,
+        .button-group button {
+            flex: 1;
+            min-width: 150px;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .button-group a.primary,
+        .button-group button.primary {
+            background: #b79d5b;
+            color: white;
+        }
+
+        .button-group a.primary:hover,
+        .button-group button.primary:hover {
+            background: #9d8449;
+        }
+
+        .button-group a.secondary,
+        .button-group button.secondary {
+            background: transparent;
+            color: #b79d5b;
+            border: 1px solid #b79d5b;
+        }
+
+        .button-group a.secondary:hover,
+        .button-group button.secondary:hover {
+            background: rgba(183, 157, 91, 0.1);
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            padding: 1rem;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            border-left: 3px solid #ff6b6b;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #b79d5b;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 2rem;
+            height: 2rem;
+            border: 3px solid rgba(183, 157, 91, 0.3);
+            border-top-color: #b79d5b;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header class="app-header">
+            <h1 class="title">ScryScan - Card Search</h1>
+            <p class="subtitle">Search our card database to find card information and pricing</p>
+            {% if db_loaded %}
+                <span class="db-status ok">Card database loaded ({{ db_count }} cards)</span>
+            {% else %}
+                <span class="db-status missing">Card database not found</span>
+            {% endif %}
+            <div class="back-row">
+                <a href="/" class="back-link">&larr; Back to Upload</a>
+            </div>
+        </header>
+
+        <div class="search-container">
+            <div class="search-box">
+                <div class="search-input-wrap">
+                    <input
+                        type="text"
+                        id="cardNameInput"
+                        placeholder="Start typing a card name (e.g., Forest, Lightning Bolt, Swamp)..."
+                        autocomplete="off"
+                        spellcheck="false"
+                        role="combobox"
+                        aria-expanded="false"
+                        aria-controls="suggestions"
+                    >
+                    <div id="suggestions" class="suggestions" role="listbox" hidden></div>
+                </div>
+                <button id="searchBtn">Search</button>
+            </div>
+
+            <div id="errorMessage" class="error-message"></div>
+
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Searching for card...</p>
+            </div>
+
+            <div id="cardResult" class="card-result">
+                <h2 id="cardName" class="card-name"></h2>
+                <div id="cardManaCost" class="mana-cost" aria-hidden="true"></div>
+                <div id="cardImageContainer" class="card-image-container">
+                    <span class="card-thumb-wrap">
+                        <img id="cardImage" class="card-image" src="" alt="Card front image">
+                        <div class="card-thumb-full">
+                            <img id="cardImageFull" src="" alt="">
+                        </div>
+                    </span>
+                    <span class="card-thumb-wrap card-image-back-wrap">
+                        <img id="cardImageBack" class="card-image" src="" alt="Card back image">
+                        <div class="card-thumb-full">
+                            <img id="cardImageBackFull" src="" alt="">
+                        </div>
+                    </span>
+                </div>
+                <div class="card-details">
+                    <div class="card-type-edition-row">
+                        <div id="cardType" class="card-type"></div>
+                        <div id="cardEdition" class="card-edition"></div>
+                    </div>
+                    <div class="price-row">
+                        <div class="price-item">
+                            <div class="price-label">Regular Price</div>
+                            <div class="price-value" id="priceRegular">-</div>
+                        </div>
+                        <div class="price-item">
+                            <div class="price-label">Foil Price</div>
+                            <div class="price-value" id="priceFoil">-</div>
+                        </div>
+                        <div class="price-item">
+                            <div class="price-label">Etched Price</div>
+                            <div class="price-value" id="priceEtched">-</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="button-group">
+                    <a id="scryballLink" href="#" target="_blank" class="primary">View on Scryfall</a>
+                    <a id="tcgplayerLink" href="#" target="_blank" class="primary">Buy on TCGPlayer</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/mana_icons.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/set_icons.js', v='inline-currentcolor') }}"></script>
+    <script>
+        const cardNameInput = document.getElementById('cardNameInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const loading = document.getElementById('loading');
+        const cardResult = document.getElementById('cardResult');
+
+        const cardImage = document.getElementById('cardImage');
+        const cardImageFull = document.getElementById('cardImageFull');
+        const cardImageBack = document.getElementById('cardImageBack');
+        const cardImageBackFull = document.getElementById('cardImageBackFull');
+        const cardImageContainer = document.getElementById('cardImageContainer');
+        const cardManaCost = document.getElementById('cardManaCost');
+
+        function renderManaCost(manaCost) {
+            cardManaCost.innerHTML = '';
+            cardManaCost.classList.remove('show');
+            const tokens = manaCost ? manaCost.match(/\{[^}]*\}/g) : null;
+            if (!tokens || tokens.length === 0) {
+                return;
+            }
+            tokens.forEach(token => {
+                const src = MANA_ICONS[token];
+                if (src) {
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.width = 16;
+                    img.height = 16;
+                    img.alt = '';
+                    img.title = MANA_ICON_TITLES[token] || token;
+                    cardManaCost.appendChild(img);
+                } else {
+                    // No SVG for this symbol (e.g. {Y}, {14}, {2/W}): text badge
+                    const span = document.createElement('span');
+                    span.className = 'mana-fallback';
+                    span.textContent = token.slice(1, -1);
+                    cardManaCost.appendChild(span);
+                }
+            });
+            cardManaCost.setAttribute('aria-label', 'Mana cost: ' + manaCost);
+            cardManaCost.setAttribute('aria-hidden', 'false');
+            cardManaCost.classList.add('show');
+        }
+
+        // Set edition icon for a set code. SET_ICONS (generated from
+        // resources/set_icon.txt by scripts/build_set_icons.py) maps a set code to an
+        // inline <svg> string colored with currentColor, so the icon inherits
+        // the text color of the element it is rendered in. The database stores
+        // lowercase set codes, so look up case-insensitively.
+        function setIconFor(setCode) {
+            if (!setCode || typeof SET_ICONS === 'undefined') {
+                return null;
+            }
+            return SET_ICONS[String(setCode).toUpperCase()] || null;
+        }
+
+        // Render the edition text with the set's SVG icon to the left of the name.
+        // The icon is wrapped in a span carrying a title attribute (hover tooltip
+        // with the set/release name). Only the icon in the card details section
+        // gets this title; the icons in the search suggestions dropdown do not.
+        function renderEdition(el, editionText, setCode) {
+            el.textContent = '';
+            const iconSvg = setIconFor(setCode);
+            if (iconSvg) {
+                const iconWrap = document.createElement('span');
+                iconWrap.className = 'set-icon-wrap';
+                iconWrap.title = editionText || (setCode ? String(setCode).toUpperCase() : '');
+                iconWrap.innerHTML = iconSvg;
+                el.appendChild(iconWrap);
+            }
+            el.appendChild(document.createTextNode(editionText));
+        }
+
+        function formatPrice(price) {
+            if (!price || price === null) {
+                return 'N/A';
+            }
+            return `$${parseFloat(price).toFixed(2)}`;
+        }
+
+        function hideError() {
+            errorMessage.classList.remove('show');
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+        }
+
+        function searchCard(exactCard = null) {
+            const cardName = (exactCard ? exactCard.name : cardNameInput.value).trim();
+
+            if (!cardName) {
+                showError('Please enter a card name');
+                return;
+            }
+
+            hideError();
+            hideSuggestions();
+            cardResult.classList.remove('show');
+            loading.classList.add('show');
+
+            const formData = new FormData();
+            formData.append('card_name', cardName);
+            if (exactCard && exactCard.scryfall_id) {
+                formData.append('scryfall_id', exactCard.scryfall_id);
+            }
+
+            fetch('/api/search-card', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                loading.classList.remove('show');
+                
+                if (data.success) {
+                    const card = data.card;
+                    document.getElementById('cardName').textContent = card.name;
+
+                    const typeEl = document.getElementById('cardType');
+                    typeEl.textContent = card.card_type || '';
+                    typeEl.style.display = card.card_type ? '' : 'none';
+
+                    renderManaCost(card.mana_cost);
+
+                    const editionEl = document.getElementById('cardEdition');
+                    const editionText = card.edition
+                        ? (card.set_code ? `${card.edition} [${card.set_code}]` : card.edition)
+                        : '';
+                    renderEdition(editionEl, editionText, card.set_code);
+
+                    document.getElementById('priceRegular').textContent = formatPrice(card.price_usd);
+                    document.getElementById('priceFoil').textContent = formatPrice(card.price_usd_foil);
+                    document.getElementById('priceEtched').textContent = formatPrice(card.price_usd_etched);
+
+                    if (card.image_url) {
+                        cardImage.src = card.image_url;
+                        cardImage.alt = card.name;
+                        cardImageFull.src = card.image_url;
+                        cardImageFull.alt = card.name;
+                    }
+
+                    // Dual-face cards: show the front (left) and back (right)
+                    // side by side; the back image is cached as <id>_back.jpg.
+                    const dualFaces = !!(card.dual_face && card.image_url && card.image_url_back);
+                    cardImageContainer.classList.toggle('dual-face', dualFaces);
+                    if (dualFaces) {
+                        cardImageBack.src = card.image_url_back;
+                        cardImageBack.alt = card.name;
+                        cardImageBackFull.src = card.image_url_back;
+                        cardImageBackFull.alt = card.name;
+                        // Fallback: hide the back face if the image is not in the local cache
+                        cardImageBack.onerror = () => cardImageContainer.classList.remove('dual-face');
+                    }
+
+                    if (card.scryfall_uri) {
+                        document.getElementById('scryballLink').href = card.scryfall_uri;
+                    }
+                    if (card.tcgplayer_purchase_uri) {
+                        document.getElementById('tcgplayerLink').href = card.tcgplayer_purchase_uri;
+                    }
+
+                    cardResult.classList.add('show');
+                } else {
+                    showError(data.message || 'Card not found');
+                }
+            })
+            .catch(error => {
+                loading.classList.remove('show');
+                showError('Error searching for card: ' + error);
+                console.error('Search error:', error);
+            });
+        }
+
+        // ---------- Typeahead suggestions ("starts with", queried on the fly) ----------
+        const suggestionsEl = document.getElementById('suggestions');
+        let suggestionItems = [];   // raw data of the currently displayed suggestions
+        let activeIndex = -1;       // highlighted suggestion
+        let suggestTimer = null;
+        let lastSuggestQuery = null; // text the visible list belongs to
+
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[c]));
+        }
+
+        function setSuggestionsOpen(open) {
+            cardNameInput.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+
+        function hideSuggestions() {
+            suggestionsEl.hidden = true;
+            suggestionsEl.innerHTML = '';
+            suggestionItems = [];
+            activeIndex = -1;
+            lastSuggestQuery = null;
+            setSuggestionsOpen(false);
+        }
+
+        function highlightSuggestion(index) {
+            activeIndex = index;
+            const items = suggestionsEl.querySelectorAll('.suggestion-item');
+            items.forEach((el, i) => {
+                el.classList.toggle('active', i === index);
+                el.setAttribute('aria-selected', i === index ? 'true' : 'false');
+            });
+            if (items[index]) {
+                items[index].scrollIntoView({ block: 'nearest' });
+            }
+        }
+
+        function showSuggestions(query, results, truncated) {
+            suggestionItems = results;
+            activeIndex = -1;
+            let html = results.map((s, i) => {
+                let edition = s.edition || '';
+                if (s.set_code) {
+                    edition = edition ? `${edition} [${s.set_code}]` : `[${s.set_code}]`;
+                }
+                const prefixLen = Math.min(query.length, s.name.length);
+                const nameHtml = '<b>' + escapeHtml(s.name.slice(0, prefixLen)) + '</b>' +
+                    escapeHtml(s.name.slice(prefixLen));
+                // The icon is a locally generated inline <svg> string (see setIconFor).
+                const iconSvg = setIconFor(s.set_code) || '';
+                const editionHtml = iconSvg + escapeHtml(edition);
+                return `<div class="suggestion-item" role="option" data-index="${i}" aria-selected="false">` +
+                    `<span class="s-name">${nameHtml}</span>` +
+                    (edition ? `<span class="s-edition">${editionHtml}</span>` : '') +
+                    `</div>`;
+            }).join('');
+            if (results.length === 0) {
+                html = '<div class="suggestion-empty">No cards start with that name</div>';
+            } else if (truncated) {
+                html += '<div class="suggestion-more">Keep typing to narrow down…</div>';
+            }
+            suggestionsEl.innerHTML = html;
+            suggestionsEl.hidden = false;
+            setSuggestionsOpen(results.length > 0);
+        }
+
+        function selectSuggestion(index) {
+            const s = suggestionItems[index];
+            if (!s) return;
+            cardNameInput.value = s.name;
+            hideSuggestions();
+            searchCard(s);  // exact scryfall_id so the picked edition is shown
+        }
+
+        function fetchSuggestions() {
+            const q = cardNameInput.value.trim();
+            if (!q) {
+                hideSuggestions();
+                return;
+            }
+            // A mouse click fires both focus and click; skip the duplicate
+            if (q === lastSuggestQuery && !suggestionsEl.hidden) {
+                return;
+            }
+            fetch('/api/suggest-cards?q=' + encodeURIComponent(q))
+                .then(response => response.json())
+                .then(data => {
+                    // Ignore stale responses if the input changed meanwhile
+                    if (q !== cardNameInput.value.trim()) return;
+                    lastSuggestQuery = q;
+                    showSuggestions(q, data.suggestions || [], !!data.truncated);
+                })
+                .catch(() => {
+                    // Non-fatal: suggestions simply stay hidden
+                });
+        }
+
+        // Re-show the variant list when the user clicks (or tabs into) the
+        // search bar that already holds a name
+        function refreshSuggestions() {
+            if (cardNameInput.value.trim()) {
+                fetchSuggestions();
+            }
+        }
+
+        cardNameInput.addEventListener('focus', refreshSuggestions);
+        cardNameInput.addEventListener('click', refreshSuggestions);
+
+        cardNameInput.addEventListener('input', () => {
+            hideSuggestions();
+            clearTimeout(suggestTimer);
+            suggestTimer = setTimeout(fetchSuggestions, 150);
+        });
+
+        cardNameInput.addEventListener('keydown', (e) => {
+            const open = !suggestionsEl.hidden && suggestionItems.length > 0;
+            if (e.key === 'ArrowDown' && open) {
+                e.preventDefault();
+                highlightSuggestion(activeIndex + 1 < suggestionItems.length ? activeIndex + 1 : 0);
+            } else if (e.key === 'ArrowUp' && open) {
+                e.preventDefault();
+                highlightSuggestion(activeIndex - 1 >= 0 ? activeIndex - 1 : suggestionItems.length - 1);
+            } else if (e.key === 'Enter') {
+                if (open && activeIndex >= 0) {
+                    e.preventDefault();
+                    selectSuggestion(activeIndex);
+                } else {
+                    searchCard();
+                }
+            } else if (e.key === 'Escape' && open) {
+                e.preventDefault();
+                hideSuggestions();
+            }
+        });
+
+        // mousedown (not click) so the input keeps focus while a suggestion is picked
+        suggestionsEl.addEventListener('mousedown', (e) => {
+            const item = e.target.closest('.suggestion-item');
+            if (!item) return;
+            e.preventDefault();
+            selectSuggestion(parseInt(item.dataset.index, 10));
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-input-wrap')) {
+                hideSuggestions();
+            }
+        });
+
+        searchBtn.addEventListener('click', searchCard);
+
+        // Focus on input on load
+        cardNameInput.focus();
+    </script>
+</body>
+</html>

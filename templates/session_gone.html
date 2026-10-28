@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan not found — ScryScan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}">
+    <!-- Self-contained: the 404 page only needs the app's CSS variables plus
+         these centering rules, so it cannot drift from the main stylesheet. -->
+    <style>
+        .gone-panel { max-width: 560px; margin: 0 auto; text-align: center; }
+        .gone-title { font-family: 'Cinzel', serif; color: var(--primary); margin: 0 0 0.6rem; }
+        .gone-text { color: var(--muted); margin: 0 0 0.4rem; line-height: 1.55; }
+        .gone-panel a.btn { text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header class="app-header">
+            <h1 class="title">ScryScan</h1>
+        </header>
+
+        <section class="panel gone-panel">
+            <h2 class="gone-title">This scan is no longer available</h2>
+            <p class="gone-text">
+                The session may have expired — scans are kept for 48 hours —
+                or the server restarted before it finished.
+            </p>
+            <a href="/" class="btn">Start a new scan</a>
+        </section>
+
+        <p class="share-footer"><a href="/" rel="noopener" class="brand-link">Powered by <strong>ScryScan</strong></a></p>
+    </div>
+</body>
+</html>

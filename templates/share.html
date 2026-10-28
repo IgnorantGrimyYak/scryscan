@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shared scan — ScryScan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}">
+</head>
+<body>
+    <div class="wrap">
+        <header class="app-header">
+            <h1 class="title">Shared scan</h1>
+            <p class="subtitle">Read-only view of a <a href="/" class="brand-link">ScryScan</a> card scan</p>
+            <span class="db-status ok">Shared: {{ shared_at or "unknown" }}</span>
+        </header>
+
+        <div id="errorBox" class="error-box"></div>
+
+        <section class="panel" id="resultsPanel">
+            <div class="results-header">
+                <div class="results-title">
+                    <h2 style="font-family:'Cinzel', serif; color: var(--primary); margin:0;">Scan Results</h2>
+                </div>
+            </div>
+            <!-- Grand total over all detected cards (sum of the per-image
+                 totals); kept in sync by share.js via createResultsView's
+                 onTotalChange callback, exactly like the owner page. Parked
+                 here (hidden, no text) until the first render: createResultsView
+                 then moves it into the .view-toggles-row toolbar — the same
+                 row as the two view toggles, pushed to the far right by CSS.
+                 -->
+            <span id="grandTotal" class="grand-total" hidden></span>
+            <div id="resultsContainer"><span>Loading shared scan…</span></div>
+        </section>
+
+        <p class="share-footer"><a href="/" rel="noopener" class="brand-link">Powered by <strong>ScryScan</strong></a></p>
+    </div>
+
+    <script>window.SHARE = { token: {{ token | tojson }}, sharedAt: {{ shared_at | tojson }} };</script>
+    <script src="{{ url_for('static', filename='js/set_icons.js', v='inline-currentcolor') }}"></script>
+    <script src="{{ url_for('static', filename='js/results_view.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/share.js') }}"></script>
+</body>
+</html>
