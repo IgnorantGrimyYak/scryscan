@@ -6,6 +6,14 @@
 > AI-generated code steered by its author. It is provided "as is", without
 > warranty of any kind, and the author cannot be held responsible for any issue
 > or harm arising from its use.
+>
+> **Third-party content.** Magic: The Gathering and all card artwork, card
+> names, and related materials — the Deckmaster card back in
+> `static/img/card-back.png`, the cards in the README screenshots, and the
+> card images and data fetched from Scryfall at runtime — are the property of
+> Wizards of the Coast, LLC. ScryScan is an independent fan tool, not
+> affiliated with, endorsed by, or sponsored by Wizards of the Coast or
+> Scryfall.
 
 Detect Magic: The Gathering cards in a photo, identify them against a local
 Scryfall database (perceptual hashing), correct each card's perspective to an
